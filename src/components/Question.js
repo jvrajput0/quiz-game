@@ -16,21 +16,15 @@ const TriviaGame = () => {
     const [submitted, setSubmitted] = useState(false);
 
     useEffect(() => {
-        const cachedQuestions = JSON.parse(localStorage.getItem('triviaQuestions'));
-        if (cachedQuestions && cachedQuestions.length > 0) {
-            setQuestions(cachedQuestions);
-            setCurrentQuestion(cachedQuestions[0]);
-        } else {
             fetchQuestions();
-        }
     }, []);
 
-    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+      const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
     const fetchQuestions = async (retryCount = 0) => {
         setIsLoading(true);
         try {
-            const response = await fetch('https://opentdb.com/api.php?amount=10');
+            const response = await fetch('https://opentdb.com/api.php?amount=1');
             if (!response.ok) {
                 if (response.status === 429 && retryCount < 3) {
                     // Exponential backoff

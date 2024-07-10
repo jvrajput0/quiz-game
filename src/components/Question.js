@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';  
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import Result from './Result.js';
 
 const TriviaGame = () => {
-
     const [questions, setQuestions] = useState([]);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [options, setOptions] = useState([]);
@@ -31,7 +30,7 @@ const TriviaGame = () => {
     const fetchQuestions = async (retryCount = 0) => {
         setIsLoading(true);
         try {
-            const response = await fetch('https://opentdb.com/api.php?amount=1');
+            const response = await fetch('https://opentdb.com/api.php?amount=10');
             if (!response.ok) {
                 if (response.status === 429 && retryCount < 3) {
                     // Exponential backoff
@@ -68,9 +67,9 @@ const TriviaGame = () => {
 
     const handleOptionClick = (option) => {
         setUserAnswer(option);
-      };
-    
-      const handleSubmitClick = () => {
+    };
+
+    const handleSubmitClick = () => {
         setSubmitted(true);
         if (userAnswer === correctAnswer) {
             setResult('Correct!');
@@ -79,8 +78,7 @@ const TriviaGame = () => {
             setResult('Incorrect!');
             setIncorrectCount(incorrectCount + 1);
         }
-      };
-
+    };
 
     const nextQuestion = () => {
         const nextIndex = currentQuestionIndex + 1;
@@ -90,17 +88,16 @@ const TriviaGame = () => {
             setResult('');
             setUserAnswer(null);
             setSubmitted(false);
+        } else {
+            checkResult();
         }
     };
 
+    let navigate = useNavigate();
 
-    let navigate = useNavigate(); 
-
-    const checkResult = () =>{ 
-      let path = `/Result`; 
-      navigate(path, { state: { correctCount, incorrectCount}});
-    }
-
+    const checkResult = () => {
+        navigate('/Result', { state: { correctCount, incorrectCount } });
+    };
 
     return (
         <div className='font-mainFont bg-blue-950 size-full h-dvh flex justify-center text-white tracking-wider'>
@@ -112,25 +109,24 @@ const TriviaGame = () => {
                         <p>Loading questions...</p>
                     ) : questions.length > 0 ? (
                         <div>
-                            <h2 className='text-2xl	font-bold mb-5 text-center text-slate-100'>Question {currentQuestionIndex + 1}<span className='text-gray-500'> / 10</span></h2>
+                            <h2 className='text-2xl font-bold mb-5 text-center text-slate-100'>
+                                Question {currentQuestionIndex + 1}
+                                <span className='text-gray-500'> / 10</span>
+                            </h2>
                             <div className='questions_part mb-5'>
                                 <span className='text-gray-400 mr-2'>Q.</span>
                                 <span dangerouslySetInnerHTML={{ __html: questions[currentQuestionIndex].question }} />
                             </div>
-
-                            <div className='answer_part flex flex-col gap-4	'>
+                            <div className='answer_part flex flex-col gap-4'>
                                 {options.map((option, index) => (
                                     <button
                                         className={`ans_btn border rounded-md p-2 hover:bg-blue-500 
-                                            ${submitted && option === correctAnswer ? 'bg-green-500' : ''
-                                            } ${submitted && option === userAnswer && option !== correctAnswer
+                                            ${submitted && option === correctAnswer ? 'bg-green-500' : ''}
+                                            ${submitted && option === userAnswer && option !== correctAnswer
                                                 ? 'bg-red-500'
-                                                : ''
-                                            }  ${!submitted && option === userAnswer
-                                                ? 'bg-blue-800'
-                                                : ''
-                                            } `}
-                                            key={index}
+                                                : ''}
+                                            ${!submitted && option === userAnswer ? 'bg-blue-800' : ''}`}
+                                        key={index}
                                         onClick={() => handleOptionClick(option)}
                                         disabled={submitted}
                                     >
@@ -138,40 +134,36 @@ const TriviaGame = () => {
                                     </button>
                                 ))}
                             </div>
-
                             {!result && (
-                            <div className='submit_btn_part flex justify-center'>
-                                <button className='ans_btn bg-white text-blue-950 font-bold my-5 w-6/12 border rounded-md p-2'
-                                    onClick={handleSubmitClick}
-                                    disabled={submitted || userAnswer === null}
-                                >
-                                    Submit
-                                </button>
-                            </div>
-                             )}
-
-
-                           {result && (
+                                <div className='submit_btn_part flex justify-center'>
+                                    <button
+                                        className='ans_btn bg-white text-blue-950 font-bold my-5 w-6/12 border rounded-md p-2'
+                                        onClick={handleSubmitClick}
+                                        disabled={submitted || userAnswer === null}
+                                    >
+                                        Submit
+                                    </button>
+                                </div>
+                            )}
+                            {result && (
                                 <div className='mt-5 flex justify-center flex-col items-center'>
                                     {result === 'Correct!' && <p className='text-green-500'>Correct! Well done.</p>}
                                     {result === 'Incorrect!' && <p className='text-red-500'>Oops! Answer is incorrect.</p>}
-                                   
-                                    {currentQuestionIndex <+ 9 ? (
-  <button className='bg-white text-blue-950 font-bold my-5 w-6/12 border rounded-md p-2' onClick={nextQuestion}>Next Question</button>
-) : (
-  <button className='bg-white text-blue-950 font-bold my-5 w-6/12 border rounded-md p-2' onClick={checkResult}>Check Result</button>
-)}
-
-
-                                   
-                                    
+                                    {currentQuestionIndex < 9 ? (
+                                        <button className='bg-white text-blue-950 font-bold my-5 w-6/12 border rounded-md p-2' onClick={nextQuestion}>
+                                            Next Question
+                                        </button>
+                                    ) : (
+                                        <button className='bg-white text-blue-950 font-bold my-5 w-6/12 border rounded-md p-2' onClick={checkResult}>
+                                            Check Result
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </div>
                     ) : (
                         <p>No questions available.</p>
                     )}
-
                 </div>
             </div>
         </div>

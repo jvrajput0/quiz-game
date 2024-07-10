@@ -12,50 +12,32 @@ const TriviaGame = () => {
     const [correctCount, setCorrectCount] = useState(0);
     const [incorrectCount, setIncorrectCount] = useState(0);
     const [error, setError] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [submitted, setSubmitted] = useState(false);
 
     useEffect(() => {
-            fetchQuestions();
+        fetchQuestions();
     }, []);
 
-      const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-    const fetchQuestions = async (retryCount = 0) => {
-        setIsLoading(true);
+    const fetchQuestions = async () => {
         try {
-            const response = await fetch('https://opentdb.com/api.php?amount=1');
-            if (!response.ok) {
-                if (response.status === 429 && retryCount < 3) {
-                    // Exponential backoff
-                    await sleep((2 ** retryCount) * 1000);
-                    fetchQuestions(retryCount + 1);
-                } else {
-                    throw new Error('Failed to fetch questions');
-                }
-                return;
-            }
+            const response = await fetch('https://opentdb.com/api.php?amount=10');
             const data = await response.json();
-            if (data.results && data.results.length > 0) {
-                localStorage.setItem('triviaQuestions', JSON.stringify(data.results));
-                setQuestions(data.results);
-                setCurrentQuestion(data.results[0]);
-                setError(null);
-            } else {
-                throw new Error('No question data found');
-            }
+            const formattedQuestions = data.results.map((question) => ({
+                ...question,
+                options: [...question.incorrect_answers, question.correct_answer].sort(() => Math.random() - 0.5),
+            }));
+            setQuestions(formattedQuestions);
+            setCurrentQuestion(formattedQuestions[0]);
+            setIsLoading(false);
         } catch (error) {
-            setError(error.message);
-        } finally {
+            setError('Failed to load questions');
             setIsLoading(false);
         }
     };
 
     const setCurrentQuestion = (questionData) => {
-        const answerOptions = [...questionData.incorrect_answers, questionData.correct_answer].sort(
-            () => Math.random() - 0.5
-        );
-        setOptions(answerOptions);
+        setOptions(questionData.options);
         setCorrectAnswer(questionData.correct_answer);
     };
 
